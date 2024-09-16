@@ -1,3 +1,8 @@
+/**
+ * This file is modified from the original source code `script.js` in `lhartikk/simple-chess-ai`
+ * I rewrite the AI part, update the dependencies and fix some bugs
+ */
+
 import $ from 'jquery';
 import { Chessboard2 } from '@chrisoakman/chessboard2/dist/chessboard2.min.mjs';
 import { Chess } from 'chess.js';

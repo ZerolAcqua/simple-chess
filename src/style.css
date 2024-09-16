@@ -1,3 +1,7 @@
+/** 
+* This file is modified from the original source code `style.css` in `lhartikk/simple-chess-ai`
+*/
+
 .board {
     width: 400px;
     margin: auto
