@@ -1,0 +1,27 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+  body
+    #board.board
+    .info
+      | Search depth:
+      select#search-depth
+        option(value="1") 1
+        option(value="2") 2
+        option(value="3" selected) 3
+        option(value="4") 4
+        option(value="5") 5
+      br
+      | Positions evaluated: 
+      span#position-count
+      br
+      | Time: 
+      span#time
+      br
+      | Positions/s: 
+      span#positions-per-s
+      br
+      br
+      #move-history.move-history
+
