@@ -82,12 +82,11 @@ module.exports = {
       filename: 'index.html',
       minify: false, // 禁用压缩
     }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'src/lib/', to: 'lib/' },
-        { from: 'src/img/', to: 'img/' },
-      ]
-    }),
+    // new CopyWebpackPlugin({
+    //   patterns: [
+    //     { from: 'src/img/', to: 'img/' },
+    //   ]
+    // }),
   ],
   optimization: {
     runtimeChunk: 'single',

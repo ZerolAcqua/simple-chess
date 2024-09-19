@@ -12,7 +12,7 @@ import './style.css';
 
 
 
-let fen = '4k3/8/8/8/8/8/8/RNBQKBNR w KQkq - 0 1'
+let fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 var board,
     game = new Chess(fen);
 
@@ -202,16 +202,16 @@ var onDragStart = function ({ square, piece, position, orientation }) {
 };
 
 var makeBestMove = function () {
-    if (game.isGameOver()) {
-        alert('Game over');
-        renderMoveHistory(game.history());
-        return;
-    }
     var bestMove = getBestMove(game);
     game.move(bestMove);
     board.position(game.fen());
-    renderMoveHistory(game.history());
+    updatePGN();
     console.log(game.ascii())
+    if (game.isGameOver()) {
+        alert('Game over');
+        updatePGN();
+        return;
+    }
 };
 
 
@@ -236,14 +236,9 @@ var getBestMove = function (game) {
     return bestMove;
 };
 
-var renderMoveHistory = function (moves) {
-    var historyElement = $('#move-history').empty();
-    historyElement.empty();
-    for (var i = 0; i < moves.length; i = i + 2) {
-        historyElement.append('<span>' + moves[i] + ' ' + (moves[i + 1] ? moves[i + 1] : ' ') + '</span><br>')
-    }
-    historyElement.scrollTop(historyElement[0].scrollHeight);
-
+function updatePGN() {
+    const pgnEl = document.getElementById('gamePGN')
+    pgnEl.innerHTML = game.pgn({ maxWidth: 5, newline: '<br />' })
 };
 
 var onDrop = function ({ source, target }) {
@@ -258,7 +253,12 @@ var onDrop = function ({ source, target }) {
         removeGreySquares();
         console.log(game.ascii())
 
-        renderMoveHistory(game.history());
+        updatePGN();
+        if (game.isGameOver()) {
+            alert('Game over');
+            updatePGN();
+            return;
+        }
         window.setTimeout(makeBestMove, 250);
 
     } catch (e) {
