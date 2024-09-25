@@ -42,10 +42,9 @@ function updatePGN(): void {
 
 // Handle the drag start event
 const onDragStart = ({ square, piece }: { square?: string, piece?: string }): boolean | void => {
-    // if (game.isCheckmate() || game.isDraw() || piece.startsWith('b')) {
-    //     return false;
-    // }
-    makeBestMove();
+    if (game.isCheckmate() || game.isDraw() || piece.startsWith('b')) {
+        return false;
+    }
 };
 
 // Handle the drop event
@@ -80,22 +79,33 @@ const onSnapEnd = (): void => {
 };
 
 // Handle mouse over square (no action needed)
-const onMouseoverSquare = (square: string, piece: string | null): void => { };
+const onMouseenterSquare = (square: string, piece: string | null): void => { };
 
 // Handle mouse out square (no action needed)
-const onMouseoutSquare = (square: string, piece: string | null): void => { };
+const onMouseleaveSquare = (square: string, piece: string | null): void => { };
+
 
 
 // Configuration for the Chessboard
 const cfg: BoardConfig = {
     draggable: true,
     position: fen,
+    sparePieces: true,
+    dropOffBoard: 'trash',
 
     onDragStart: onDragStart,
     onDrop: onDrop,
-    onMouseoutSquare: onMouseoutSquare,
-    onMouseoverSquare: onMouseoverSquare,
-    onSnapEnd: onSnapEnd
+
+    onMouseenterSquare: (...obs: any[]) => { console.log('onMouseoutSquare', obs) },
+    onMouseleaveSquare: (...obs: any[]) => { console.log('onMouseoverSquare', obs) },
+
+    // invalid
+    // showErrors: (...obs: any[]) => { console.log('showErrors', obs) },
+    // pieceTheme: (piece: Piece) => { console.log('pieceTheme', piece); return 'https://chessboardjs.com/img/chesspieces/alpha/wP.png'; },
+    // onDragMove: (...obs: any[]) => { console.log('onDragMove', obs) },
+    // onMoveEnd: (...obs: any[]) => { console.log('onMoveEnd', obs) },
+    // onSnapbackEnd: (...obs: any[]) => { console.log('onSnapbackEnd', obs) },
+    // onSnapEnd: (...obs: any[]) => { console.log('onSnapEnd', obs) },
 };
 
 // Initialize the board with the configuration

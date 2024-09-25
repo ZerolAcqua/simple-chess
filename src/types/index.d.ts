@@ -64,6 +64,7 @@ declare module '@chrisoakman/chessboard2/dist/chessboard2.min.mjs' {
 		f1 = "f1",
 		g1 = "g7",
 		h1 = "h1",
+		offboard = "off-board",	// by Acqua
 	}
 
 	export enum Piece {
@@ -101,6 +102,16 @@ declare module '@chrisoakman/chessboard2/dist/chessboard2.min.mjs' {
 		piece?: Piece
 	};
 
+	export type BoardData = {
+		position?: BoardPositionType,
+		orientation?: OrientationType,
+	}
+
+	export type ChangeData = {
+		oldPos: BoardPositionType,
+		newPos: BoardPositionType
+	};
+
 
 
 	export type OnDropCallback = (args: { orientation?: OrientationType, piece?: Piece, source?: Square, target?: Square }) => DropOffBoardType | void;
@@ -115,13 +126,15 @@ declare module '@chrisoakman/chessboard2/dist/chessboard2.min.mjs' {
 		onChange?: OnChangeCallback | undefined;
 		onDragStart?: OnDragStartCallback | undefined;
 
-		onMoveEnd?: Callback | undefined;	// did't test
+		// didn't find definitions for these callbacks
+		onMoveEnd?: Callback | undefined;
 		onSnapEnd?: Callback | undefined;
 		onDragMove?: Callback | undefined;
 		onSnapbackEnd?: Callback | undefined;
-		onMouseoutSquare?: Callback | undefined;
-		onMouseoverSquare?: Callback | undefined;
+		onMouseleaveSquare?: Callback | undefined;
+		onMouseenterSquare?: Callback | undefined;
 
+		// fail to test these callbacks
 		pieceTheme?: string | ((piece: Piece) => string);
 		showErrors?: false | ErrorType | ErrorCallback;
 
