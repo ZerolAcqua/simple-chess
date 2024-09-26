@@ -82,8 +82,8 @@ declare module '@chrisoakman/chessboard2/dist/chessboard2.min.mjs' {
 		wP = "wP",
 	}
 
-	export type BoardPositionType = {
-		[P in Square]?: Piece;
+	export interface BoardPositionType = {
+		[P in Square] ?: Piece;
 	};
 
 	export type PositionType = "start" | string | BoardPositionType;
@@ -121,36 +121,38 @@ declare module '@chrisoakman/chessboard2/dist/chessboard2.min.mjs' {
 
 
 	export interface BoardConfig {
+
 		draggable?: boolean | undefined;
 		onDrop?: OnDropCallback | undefined;
 		onChange?: OnChangeCallback | undefined;
 		onDragStart?: OnDragStartCallback | undefined;
 
-		// didn't find definitions for these callbacks
-		onMoveEnd?: Callback | undefined;
-		onSnapEnd?: Callback | undefined;
-		onDragMove?: Callback | undefined;
-		onSnapbackEnd?: Callback | undefined;
 		onMouseleaveSquare?: Callback | undefined;
 		onMouseenterSquare?: Callback | undefined;
-
-		// fail to test these callbacks
-		pieceTheme?: string | ((piece: Piece) => string);
-		showErrors?: false | ErrorType | ErrorCallback;
-
-		sparePieces?: boolean | undefined;
-		showNotation?: boolean | undefined;
+		onMousedownSquare?: Callback | undefined;
+		onMouseupSquare?: Callback | undefined;
 
 		orientation?: OrientationType | undefined;
-		dropOffBoard?: DropOffBoardType | undefined;
-
-		moveSpeed?: number | SpeedType | undefined;
-		snapSpeed?: number | SpeedType | undefined;
-		trashSpeed?: number | SpeedType | undefined;
-		appearSpeed?: number | SpeedType | undefined;
-		snapbackSpeed?: number | SpeedType | undefined;
 
 		position?: PositionType;
+
+		// === fail to work in Doc === 
+		// onDragMove?: Callback | undefined;
+		// onMoveEnd?: Callback | undefined;
+		// onSnapbackEnd?: Callback | undefined;
+		// pieceTheme?: string | ((piece: Piece) => string);
+		// showNotation?: boolean | undefined;
+		// sparePieces?: boolean | undefined;
+
+		// === not sure ===
+		// onSnapEnd?: Callback | undefined;
+		// showErrors?: false | ErrorType | ErrorCallback;
+		// moveSpeed?: number | SpeedType | undefined;
+		// snapSpeed?: number | SpeedType | undefined;
+		// trashSpeed?: number | SpeedType | undefined;
+		// appearSpeed?: number | SpeedType | undefined;
+		// snapbackSpeed?: number | SpeedType | undefined;
+		// dropOffBoard?: DropOffBoardType | undefined;
 	}
 
 	export interface ChessBoardInstance {

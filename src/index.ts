@@ -73,10 +73,6 @@ const onDrop: OnDropCallback = ({ source, target }) => {
     }
 };
 
-// Handle the snap end event
-const onSnapEnd = (): void => {
-    board.position(game.fen());
-};
 
 // Handle mouse over square (no action needed)
 const onMouseenterSquare = (square: string, piece: string | null): void => { };
@@ -90,22 +86,15 @@ const onMouseleaveSquare = (square: string, piece: string | null): void => { };
 const cfg: BoardConfig = {
     draggable: true,
     position: fen,
-    sparePieces: true,
-    dropOffBoard: 'trash',
+
+    // orientation: 'black',
+
 
     onDragStart: onDragStart,
     onDrop: onDrop,
 
     onMouseenterSquare: (...obs: any[]) => { console.log('onMouseoutSquare', obs) },
     onMouseleaveSquare: (...obs: any[]) => { console.log('onMouseoverSquare', obs) },
-
-    // invalid
-    // showErrors: (...obs: any[]) => { console.log('showErrors', obs) },
-    // pieceTheme: (piece: Piece) => { console.log('pieceTheme', piece); return 'https://chessboardjs.com/img/chesspieces/alpha/wP.png'; },
-    // onDragMove: (...obs: any[]) => { console.log('onDragMove', obs) },
-    // onMoveEnd: (...obs: any[]) => { console.log('onMoveEnd', obs) },
-    // onSnapbackEnd: (...obs: any[]) => { console.log('onSnapbackEnd', obs) },
-    // onSnapEnd: (...obs: any[]) => { console.log('onSnapEnd', obs) },
 };
 
 // Initialize the board with the configuration
