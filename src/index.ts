@@ -6,7 +6,7 @@
 import '@chrisoakman/chessboard2/dist/chessboard2.css';
 import './style.css';
 
-import { Chessboard2, BoardConfig, ChessBoardInstance, OnDropCallback, Piece } from '@chrisoakman/chessboard2/dist/chessboard2.min.mjs';
+import { Chessboard2, BoardConfig, ChessBoardInstance, Callback } from '@chrisoakman/chessboard2/dist/chessboard2.min.mjs';
 import { Chess } from 'chess.js';
 import { getBestMove } from './bot';
 
@@ -41,14 +41,14 @@ function updatePGN(): void {
 };
 
 // Handle the drag start event
-const onDragStart = ({ square, piece }: { square?: string, piece?: string }): boolean | void => {
+const onDragStart = ({ square, piece }: { square?: string, piece?: string }): void => {
     if (game.isCheckmate() || game.isDraw() || piece.startsWith('b')) {
-        return false;
+        return;
     }
 };
 
 // Handle the drop event
-const onDrop: OnDropCallback = ({ source, target }) => {
+const onDrop: Callback = ({ source, target }) => {
     try {
         const move = game.move({
             from: source,
@@ -74,6 +74,10 @@ const onDrop: OnDropCallback = ({ source, target }) => {
 };
 
 
+const onChange: Callback = (oldPos, newPos) => {
+    console.log('onChange', oldPos, newPos)
+}
+
 // Handle mouse over square (no action needed)
 const onMouseenterSquare = (square: string, piece: string | null): void => { };
 
@@ -91,10 +95,14 @@ const cfg: BoardConfig = {
 
 
     onDragStart: onDragStart,
-    onDrop: onDrop,
+    // onDrop: onDrop,
+    onDrop: (...obs: any[]) => { console.log('onDrop', obs) },
+    onChange: onChange,
 
-    onMouseenterSquare: (...obs: any[]) => { console.log('onMouseoutSquare', obs) },
-    onMouseleaveSquare: (...obs: any[]) => { console.log('onMouseoverSquare', obs) },
+    onMouseenterSquare: (...obs: any[]) => { console.log('onouseenterSquare', obs) },
+    onMouseleaveSquare: (...obs: any[]) => { console.log('onMouseleaveSquare', obs) },
+    onMousedownSquare: (...obs: any[]) => { console.log('onMousedownSquare', obs) },
+    onMouseupSquare: (...obs: any[]) => { console.log('onMouseupSquare', obs) }
 };
 
 // Initialize the board with the configuration

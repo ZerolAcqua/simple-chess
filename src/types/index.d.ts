@@ -79,11 +79,11 @@ declare module '@chrisoakman/chessboard2/dist/chessboard2.min.mjs' {
 		wR = "wR",
 		wN = "wN",
 		wB = "wB",
-		wP = "wP",
+		wP = "wP"
 	}
 
-	export interface BoardPositionType = {
-		[P in Square] ?: Piece;
+	export type BoardPositionType = {
+		[P in Square]?: Piece;
 	};
 
 	export type PositionType = "start" | string | BoardPositionType;
@@ -94,31 +94,47 @@ declare module '@chrisoakman/chessboard2/dist/chessboard2.min.mjs' {
 	export type OrientationFlipType = "flip";
 	export type OrientationType = "white" | "black";
 	export type DropOffBoardType = "snapback" | "trash";
-	export type Callback = (...args: any[]) => any;
+	// export type Callback = (...args: any[]) => any;
 
-	export type MoveData = {
+	// 如果 T 是数组，展开成多个参数，否则当对象作为一个参数处理
+	export type Callback<T = any> = (...args: T extends any[] ? T : [T]) => string | void;
+
+	type PieceMoveData = {
 		source?: Square,
 		target?: Square,
 		piece?: Piece
 	};
-
-	export type BoardData = {
+	type BoardData = {
 		position?: BoardPositionType,
 		orientation?: OrientationType,
 	}
+	type ChangeData = [
+		oldPos?: BoardPositionType,
+		newPos?: BoardPositionType
+	];
+	type MouseMoveData = {
+		piece?: Piece | null
+		square?: Square,
+		toSquare?: Square,
+		fromSquare?: Square
+	}
+	type ChooseData = {
+		piece?: Piece,
+		square?: Square
+	}
+	type coodinate = {
+		x?: number,
+		y?: number
+	}
 
-	export type ChangeData = {
-		oldPos: BoardPositionType,
-		newPos: BoardPositionType
-	};
 
-
-
-	export type OnDropCallback = (args: { orientation?: OrientationType, piece?: Piece, source?: Square, target?: Square }) => DropOffBoardType | void;
-	export type OnChangeCallback = (args: { oldPos: BoardPositionType, newPos: BoardPositionType }) => void;
-	export type OnDragStartCallback = (args: { orientation?: OrientationType, piece?: Piece, position?: BoardPositionType, square?: Square }) => boolean | void;
-
-
+	export type OnDropCallback = Callback<BoardData & PieceMoveData & coodinate>;
+	export type OnChangeCallback = Callback<ChangeData>;
+	export type OnDragStartCallback = Callback<BoardData & ChooseData>;
+	export type OnMousedownSquareCallback = Callback<BoardData & ChooseData>;
+	export type OnMouseupSquareCallback = Callback<BoardData & ChooseData>;
+	export type OnMouseenterSquareCallback = Callback<BoardData & MouseMoveData>;
+	export type OnMouseleaveSquareCallback = Callback<BoardData & MouseMoveData>;
 
 	export interface BoardConfig {
 
@@ -127,10 +143,10 @@ declare module '@chrisoakman/chessboard2/dist/chessboard2.min.mjs' {
 		onChange?: OnChangeCallback | undefined;
 		onDragStart?: OnDragStartCallback | undefined;
 
-		onMouseleaveSquare?: Callback | undefined;
-		onMouseenterSquare?: Callback | undefined;
-		onMousedownSquare?: Callback | undefined;
-		onMouseupSquare?: Callback | undefined;
+		onMouseleaveSquare?: OnMouseleaveSquareCallback | undefined;
+		onMouseenterSquare?: OnMouseenterSquareCallback | undefined;
+		onMousedownSquare?: OnMousedownSquareCallback | undefined;
+		onMouseupSquare?: OnMouseupSquareCallback | undefined;
 
 		orientation?: OrientationType | undefined;
 
