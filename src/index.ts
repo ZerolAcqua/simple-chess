@@ -8,7 +8,9 @@ import './style.css';
 
 import { Chessboard2, BoardConfig, ChessBoardInstance, Callback } from '@chrisoakman/chessboard2/dist/chessboard2.min.mjs';
 import { Chess } from 'chess.js';
+
 import { getBestMove } from './bot';
+
 
 // Initialize the board and the game state
 let fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -90,19 +92,17 @@ const onMouseleaveSquare = (square: string, piece: string | null): void => { };
 const cfg: BoardConfig = {
     draggable: true,
     position: fen,
-
     // orientation: 'black',
 
-
     onDragStart: onDragStart,
-    // onDrop: onDrop,
-    onDrop: (...obs: any[]) => { console.log('onDrop', obs) },
+    onDrop: onDrop,
     onChange: onChange,
 
-    onMouseenterSquare: (...obs: any[]) => { console.log('onouseenterSquare', obs) },
-    onMouseleaveSquare: (...obs: any[]) => { console.log('onMouseleaveSquare', obs) },
-    onMousedownSquare: (...obs: any[]) => { console.log('onMousedownSquare', obs) },
-    onMouseupSquare: (...obs: any[]) => { console.log('onMouseupSquare', obs) }
+    // onDrop: (...obs: any[]) => { console.log('onDrop', obs) },
+    // onMouseenterSquare: (...obs: any[]) => { console.log('onouseenterSquare', obs) },
+    // onMouseleaveSquare: (...obs: any[]) => { console.log('onMouseleaveSquare', obs) },
+    // onMousedownSquare: (...obs: any[]) => { console.log('onMousedownSquare', obs) },
+    // onMouseupSquare: (...obs: any[]) => { console.log('onMouseupSquare', obs) }
 };
 
 // Initialize the board with the configuration
