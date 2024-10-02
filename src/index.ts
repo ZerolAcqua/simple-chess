@@ -7,9 +7,11 @@ import '@chrisoakman/chessboard2/dist/chessboard2.css';
 import './style.css';
 
 import { Chessboard2, BoardConfig, ChessBoardInstance, Callback } from '@chrisoakman/chessboard2/dist/chessboard2.min.mjs';
-import { Chess } from 'chess.js';
+import { Chess, Move } from 'chess.js';
 
-import { getBestMove } from './bot';
+// import { Worker } from 'worker_threads'
+import { getBestMove } from './chessBot'
+
 
 
 // Initialize the board and the game state
