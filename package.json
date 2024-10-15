@@ -41,6 +41,7 @@
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "chess.js": "^1.0.0-beta.8",
+    "javascript-state-machine": "^2.4.0",
     "jquery": "^3.7.1"
   }
 }

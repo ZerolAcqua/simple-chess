@@ -1,3 +1,9 @@
+/**
+ * This file is modified from the original source code `script.js` in `lhartikk/simple-chess-ai`
+ * I rewrite the AI part, update the dependencies and fix some bugs
+ */
+
+
 import { Chess, Piece, Move } from 'chess.js';
 
 enum GameStage {
