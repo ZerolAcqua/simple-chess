@@ -5,6 +5,7 @@ import { WorkerMessageEvent } from './interface';
 
 
 let chessID: number = -1;
+let searchDepth: number = 3;
 self.onmessage = (event: WorkerMessageEvent) => {
 
 	let data = event.data;
@@ -12,6 +13,7 @@ self.onmessage = (event: WorkerMessageEvent) => {
 	// reset chessID
 	if (data.pgn === undefined && data.fen === undefined) {
 		chessID = data.id;
+		searchDepth = data.searchDepth ?? 3;
 		return;
 	}
 	if (chessID === data.id) {

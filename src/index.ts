@@ -4,13 +4,15 @@
  */
 
 import '@chrisoakman/chessboard2/dist/chessboard2.css';
-import './style.css';
+import 'bootstrap/scss/bootstrap.scss';
+import './style.scss';
 
 import { Chessboard2, BoardConfig, ChessBoardInstance, Callback } from '@chrisoakman/chessboard2/dist/chessboard2.min.mjs';
 import { Chess, Move } from 'chess.js';
 
 import { getBestMove } from './chessBot'
 import { WorkerMessageEvent } from './interface';
+import 'bootstrap';
 
 enum GameState {
     init,
@@ -34,7 +36,7 @@ worker.onmessage = (event: WorkerMessageEvent) => {
     let data = event.data;
     botQueueLength--;
     if (data.id === chessID) {
-        console.log('[worker onmessage]', data.move);
+        console.log('[get move]', data.move);
         botNextMove = data.move;
         step();
     }
@@ -66,15 +68,23 @@ let gamePlay = {
 
 
 function init() {
+    // gamePlay.whitePlay = botPlay;
+    // gamePlay.blackPlay = botPlay;
+    getPlay()
+    console.log(gamePlay.whitePlay);
+    console.log(gamePlay.blackPlay);
 
-    gamePlay.whitePlay = botPlay;
-    gamePlay.blackPlay = botPlay;
 
     botNextMove = undefined;
     lastResetTime = lastRestartTime = Date.now();
     chessID++;
 
     worker.postMessage({ id: chessID });
+
+    // load
+    chess.load(fen);
+    gameState = GameState.init;
+    gameTurn = chess.turn() === 'w' ? GameTurn.white : GameTurn.black;
 
     step();
 }
@@ -91,14 +101,9 @@ function switchTurn() {
     }
 }
 
-function display() {
-    board.position(chess.fen());
-    updatePGN();
-}
+
 
 function step() {
-    display();
-
     // gameover
     if (isGameOver()) return;
 
@@ -110,6 +115,7 @@ function step() {
             gamePlay.blackPlay();
             break;
     }
+    display();
     isGameOver();
 }
 
@@ -301,7 +307,12 @@ const onMouseleaveSquare = (square: string, piece: string | null): void => { };
 
 /* utils */
 
-// Update the PGN (Portable Game Notation)
+function display() {
+    board.position(chess.fen());
+    updatePGN();
+}
+
+// TODO: Update the PGN (Portable Game Notation)
 function updatePGN(): void {
     const pgnEl = document.getElementById('gamePGN');
     if (pgnEl) {
@@ -309,6 +320,13 @@ function updatePGN(): void {
     }
 };
 
+function getPlay() {
+    // 获取 radio 数据，name 分别为 whitePlay 和 blackPlay
+    let whitePlay = (document.querySelector('input[name="whitePlay"]:checked') as HTMLInputElement).value;
+    let blackPlay = (document.querySelector('input[name="blackPlay"]:checked') as HTMLInputElement).value;
+    gamePlay.whitePlay = whitePlay === 'bot' ? botPlay : playerPlay;
+    gamePlay.blackPlay = blackPlay === 'bot' ? botPlay : playerPlay;
+}
 
 
 
@@ -319,10 +337,10 @@ const cfg: BoardConfig = {
     // orientation: 'black',
 
     onDragStart: onDragStart,
-    onDrop: onDrop,
+    // onDrop: onDrop,
     onChange: onChange,
 
-    // onDrop: (...obs: any[]) => { console.log('onDrop', obs) },
+    onDrop: (...obs: any[]) => { console.log('onDrop', obs); return 'snapback'; },
     // onMouseenterSquare: (...obs: any[]) => { console.log('onouseenterSquare', obs) },
     // onMouseleaveSquare: (...obs: any[]) => { console.log('onMouseleaveSquare', obs) },
     // onMousedownSquare: (...obs: any[]) => { console.log('onMousedownSquare', obs) },
@@ -331,4 +349,7 @@ const cfg: BoardConfig = {
 
 // Initialize the board
 board = Chessboard2('board', cfg);
-init();
+
+
+// bind event
+document.getElementById('restart').addEventListener('click', init);

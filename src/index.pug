@@ -3,31 +3,56 @@
 doctype html
 html(lang="en")
   head
-    meta(charset="UTF-8")
+    meta(cname="viewport" content="width=device-width, initial-scale=1" harset="UTF-8" )
   body
-    #board.board
-    .info
-      | Search depth:
-      select#search-depth
-        option(value="1") 1
-        option(value="2") 2
-        option(value="3" selected) 3
-        option(value="4") 4
-        option(value="5") 5
-      br
-      | Positions evaluated: 
-      span#position-count
-      br
-      | Time: 
-      span#time
-      br
-      | Positions/s: 
-      span#positions-per-s
-      br
-      br
-      h4 Game PGN:
-      div#gamePGN(style="font-family: monospace")
+    nav.navbar.bg-body-tertiary
+      .container-fluid
+        span.navbar-brand.mb-0.h1 Simple Chess
+    .container-fluid
+      .d-flex.justify-content-center.mt-3.mx-3
+        .board#board
+        .info.ms-3
+          .game-history#gamePGN(style="font-family: monospace")
+      .setting.mt-3
+        .search-depth
+          label.form-label(for="search-depth") Search depth
+          select.form-select#search-depth( aria-label="Default select example")
+            option(value="1") 1
+            option(value="2") 2
+            option(value="3" selected) 3
+        .restart.mt-3 
+          button.btn.btn-primary#restart Restart game
+        //- <div class="form-check">
+        //-   <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+        //-   <label class="form-check-label" for="flexRadioDefault1">
+        //-     Default radio
+        //-   </label>
+        //- </div>
+        //- <div class="form-check">
+        //-   <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" checked>
+        //-   <label class="form-check-label" for="flexRadioDefault2">
+        //-     Default checked radio
+        //-   </label>
+        //- </div>
+        .play.mt-3 
+          label.form-label White
+          .form-check
+            input.form-check-input#flexRadioWhitePlay1(type="radio" name="whitePlay" value="player")
+            label.form-check-label(for="flexRadioWhitePlay1") Player
+          .form-check
+            input.form-check-input#flexRadioWhitePlay2(type="radio" name="whitePlay" value="bot"  checked)
+            label.form-check-label(for="flexRadioWhitePlay2") Bot
+          label.form-label Black
+          .form-check
+            input.form-check-input#flexRadioBlackPlay1(type="radio" name="blackPlay" value="player")
+            label.form-check-label(for="flexRadioBlackPlay1") Player
+          .form-check
+            input.form-check-input#flexRadioBlackPlay2(type="radio" name="blackPlay" value="bot" checked)
+            label.form-check-label(for="flexRadioBlackPlay2") Bot
 
 
- 
+
+
+
+
 
