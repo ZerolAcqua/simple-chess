@@ -34,14 +34,26 @@ let worker = new Worker(new URL('./chessBotWorker.ts', import.meta.url));
 
 worker.onmessage = (event: WorkerMessageEvent) => {
     let data = event.data;
-    botQueueLength--;
     switch (data.type) {
         case MessageType.result:
-            if (data.id === chessID) {
-                console.log('[get move]', data.move);
-                botNextMove = data.move;
-                step();
+            botQueueLength--;
+            console.log('[worker]bot queue size:', botQueueLength);
+            if (searchDepth <= 2) {
+                setTimeout(() => {
+                    if (data.id === chessID) {
+                        console.log('[get move]', data.move);
+                        botNextMove = data.move;
+                        step();
+                    }
+                }, 500);
+            } else {
+                if (data.id === chessID) {
+                    console.log('[get move]', data.move);
+                    botNextMove = data.move;
+                    step();
+                }
             }
+
             return
         case MessageType.pending:
             console.log('pending');
@@ -70,6 +82,7 @@ let fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 // let fen: string = '4k3/8/8/8/8/8/8/QQQQKQQQ w KQ - 0 1';
 let chess = new Chess(fen);
 let board: ChessBoardInstance;
+let searchDepth: number = 3;
 
 let gameState = GameState.init;
 let gameTurn = GameTurn.white;
@@ -80,7 +93,8 @@ let gamePlay = {
 
 
 function init() {
-    getPlay()
+    getPlay();
+    getSearchDepth();
 
     botNextMove = undefined;
     playerNextMove = undefined;
@@ -89,10 +103,11 @@ function init() {
     lastResetTime = lastRestartTime = Date.now();
     chessID++;
 
+    console.log('[init]', chessID, searchDepth);
     worker.postMessage({
         type: MessageType.init,
         id: chessID,
-        searchDepth: 3,
+        searchDepth: searchDepth,
     });
 
     // load
@@ -104,7 +119,6 @@ function init() {
     step();
 }
 
-// Todo
 function switchTurn() {
     gameTurn = gameTurn === GameTurn.white ?
         GameTurn.black : GameTurn.white;
@@ -112,8 +126,6 @@ function switchTurn() {
     display();
     step();
 }
-
-
 
 function step() {
     // gameover
@@ -219,6 +231,7 @@ function botPlay() {
                     pgn: chess.pgn(),
                 });
                 botQueueLength++;
+                console.log('[worker]bot queue size:', botQueueLength);
                 gameState = GameState.botThinking;
             }
             break;
@@ -246,7 +259,6 @@ function isGameOver() {
     window.setTimeout(() => alert('Game over'), 250);
 
     return true;
-
 }
 
 
@@ -341,6 +353,10 @@ function getPlay() {
     gamePlay.blackPlay = blackPlay === 'bot' ? botPlay : playerPlay;
 }
 
+function getSearchDepth() {
+    searchDepth = parseInt((document.getElementById('search-depth') as HTMLSelectElement).value, 10);
+}
+
 function isPlayerTurn() {
     return gameTurn === GameTurn.white && gamePlay.whitePlay === playerPlay ||
         gameTurn === GameTurn.black && gamePlay.blackPlay === playerPlay;
@@ -389,7 +405,11 @@ init();
 
 
 // bind event
-document.getElementById('restart').addEventListener('click', init);
+document.getElementById('restart').addEventListener('click', () => {
+    if (Date.now() - lastResetTime < 1000) return;
+    if (botQueueLength > 4) return;
+    init();
+});
 document.getElementById('promotionQueen').addEventListener('click', () => { promoteMove = { ...playerNextMove, promotion: 'q' }; step(); });
 document.getElementById('promotionRook').addEventListener('click', () => { promoteMove = { ...playerNextMove, promotion: 'r' }; step(); });
 document.getElementById('promotionBishop').addEventListener('click', () => { promoteMove = { ...playerNextMove, promotion: 'b' }; step(); });

@@ -24,7 +24,7 @@ self.onmessage = (event: WorkerMessageEvent) => {
 			// no validation
 			if (data.fen !== undefined) {
 				chess.load(data.fen, { skipValidation: true });
-				let move = getBestMove(chess, 3);
+				let move = getBestMove(chess, searchDepth);
 				self.postMessage({
 					type: MessageType.result,
 					id: chessID,
@@ -35,7 +35,7 @@ self.onmessage = (event: WorkerMessageEvent) => {
 				chess.loadPgn(data.pgn);
 				// Threefold repetition is meaningful
 				// only if chess is initialized with PGN
-				let move = getBestMove(chess, 3, { testTFR: true });
+				let move = getBestMove(chess, searchDepth, { testTFR: true });
 				self.postMessage({
 					type: MessageType.result,
 					id: chessID,
