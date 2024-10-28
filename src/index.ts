@@ -11,7 +11,7 @@ import { Chessboard2, BoardConfig, ChessBoardInstance, Callback } from '@chrisoa
 import { Chess, Move } from 'chess.js';
 
 import { getBestMove } from './chessBot'
-import { WorkerMessageEvent } from './interface';
+import { WorkerMessageEvent, MessageType } from './interface';
 import 'bootstrap';
 
 enum GameState {
@@ -35,10 +35,19 @@ let worker = new Worker(new URL('./chessBotWorker.ts', import.meta.url));
 worker.onmessage = (event: WorkerMessageEvent) => {
     let data = event.data;
     botQueueLength--;
-    if (data.id === chessID) {
-        console.log('[get move]', data.move);
-        botNextMove = data.move;
-        step();
+    switch (data.type) {
+        case MessageType.result:
+            if (data.id === chessID) {
+                console.log('[get move]', data.move);
+                botNextMove = data.move;
+                step();
+            }
+            return
+        case MessageType.pending:
+            console.log('pending');
+            return;
+        default:
+            throw new Error('Invalid message type');
     }
 };
 
@@ -79,7 +88,11 @@ function init() {
     lastResetTime = lastRestartTime = Date.now();
     chessID++;
 
-    worker.postMessage({ id: chessID });
+    worker.postMessage({
+        type: MessageType.init,
+        id: chessID,
+        searchDepth: 3,
+    });
 
     // load
     chess.load(fen);
@@ -210,7 +223,11 @@ function botPlay() {
             } else {
                 // bot is thinking
                 // updateText(statusText, $l('机器人思考中……'));
-                worker.postMessage({ id: chessID, pgn: chess.pgn() });
+                worker.postMessage({
+                    type: MessageType.params,
+                    id: chessID,
+                    pgn: chess.pgn(),
+                });
                 botQueueLength++;
                 gameState = GameState.botThinking;
             }
