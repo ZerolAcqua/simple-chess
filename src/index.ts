@@ -8,7 +8,7 @@ import 'bootstrap/scss/bootstrap.scss';
 import './style.scss';
 
 import { Chessboard2, BoardConfig, ChessBoardInstance, Callback } from '@chrisoakman/chessboard2/dist/chessboard2.min.mjs';
-import { Chess, Move } from 'chess.js';
+import { Chess, Move, Square } from 'chess.js';
 
 import { getBestMove } from './chessBot'
 import { WorkerMessageEvent, MessageType } from './interface';
@@ -55,6 +55,7 @@ worker.onmessage = (event: WorkerMessageEvent) => {
 
 // variables
 let botNextMove: Move | undefined;
+let playerNextMove: Move | undefined;
 let chessID = 0;
 let lastRestartTime = 0;
 let lastResetTime = 0;
@@ -77,14 +78,10 @@ let gamePlay = {
 
 
 function init() {
-    // gamePlay.whitePlay = botPlay;
-    // gamePlay.blackPlay = botPlay;
     getPlay()
-    console.log(gamePlay.whitePlay);
-    console.log(gamePlay.blackPlay);
-
 
     botNextMove = undefined;
+    playerNextMove = undefined;
     lastResetTime = lastRestartTime = Date.now();
     chessID++;
 
@@ -106,12 +103,8 @@ function init() {
 function switchTurn() {
     gameTurn = gameTurn === GameTurn.white ?
         GameTurn.black : GameTurn.white;
-    // for bot auto play
-    if ((gameTurn === GameTurn.white && gamePlay.whitePlay === botPlay) ||
-        gameTurn === GameTurn.black && gamePlay.blackPlay === botPlay) {
-        gameState = GameState.init;
-        step();
-    }
+    gameState = GameState.init;
+    step();
 }
 
 
@@ -134,32 +127,23 @@ function step() {
 
 function playerPlay() {
     switch (gameState) {
-        case GameState.init: {
-            gameState = GameState.move;
-        }
-        // fall through
+        case GameState.init:
+        case GameState.startTurn:
         case GameState.move: {
-            // select piece
-
-            // if (selectedPos && !targetPos) {
-            //     clearMovable();
-            //     clearEntityGhost();
-            //     addEntityGhost(selectedPieceEntity);
-            //     showMoved();
-            //     showMovable(selectedPos);
-            // } else {
-            //     if (selectedPos && targetPos && selectedPieceEntity) { // move piece
-            //         clearMovable();
-            //         clearEntityGhost();
-            //         if (movePiece(selectedPos, targetPos)) {
-            //             setMoved(selectedPos, targetPos);
-            //             switchTurn();
-            //         }
-            //         clearMovePos();
-            //     }
-            //     showMoved();
-            // }
-
+            gameState = GameState.move;
+            console.log('[playerPlay]', playerNextMove);
+            // player move
+            if (playerNextMove) {
+                try {
+                    chess.move(playerNextMove);
+                    // MUST clear playerNextMove before switchTurn()
+                    playerNextMove = undefined;
+                    switchTurn();
+                } catch (e) {
+                    console.error("[playerPlay move]", e);
+                    display();
+                }
+            }
             break;
         }
         case GameState.promote: {
@@ -187,11 +171,10 @@ function playerPlay() {
             break;
         }
         case GameState.botThinking: {
-            // updateText(statusText, $l('机器人思考中……'));
             break;
         }
         default: {
-            break;
+            throw new Error('Invalid game state');
         }
     }
 }
@@ -209,12 +192,14 @@ function botPlay() {
         case GameState.init:
         case GameState.startTurn:
         case GameState.move: {
+            gameState = GameState.move;
             // bot move
             if (botNextMove) {
-                chess.move(botNextMove);
-
-                // finish turn
-                // updateText(statusText, '');
+                try {
+                    chess.move(botNextMove);
+                } catch (e) {
+                    console.error("[botPlay move]", e);
+                }
 
                 // MUST clear botNextMove before switchTurn()
                 botNextMove = undefined;
@@ -222,7 +207,6 @@ function botPlay() {
 
             } else {
                 // bot is thinking
-                // updateText(statusText, $l('机器人思考中……'));
                 worker.postMessage({
                     type: MessageType.params,
                     id: chessID,
@@ -233,26 +217,30 @@ function botPlay() {
             }
             break;
         }
+        default: {
+            // bot doesn't need to promote
+            throw new Error('Invalid game state');
+        }
     }
 }
 
 
 function isGameOver() {
     if (gameState === GameState.gameover) return true;
-    if (chess.isGameOver()) {
-        gameState = GameState.gameover;
-        // gameover process
-        if (chess.isCheckmate()) {
-            // show checkmate info
-        } else {
-            // show draw info
-        }
+    if (!chess.isGameOver()) return false;
 
-        // show gameover effect
-        window.setTimeout(() => alert('Game over'), 250);
+    gameState = GameState.gameover;
+    // gameover process
+    if (chess.isCheckmate()) {
+        // show checkmate info
+    } else {
+        // show draw info
+    }
+    // show gameover effect
+    window.setTimeout(() => alert('Game over'), 250);
 
-        return true;
-    } else return false;
+    return true;
+
 }
 
 
@@ -260,7 +248,10 @@ function isGameOver() {
 
 /* board visualization and game state handling */
 
-// Make the best move for the AI
+/** 
+ * @deprecated
+ * @brief Make the best move for the AI
+ */
 function makeBestMove(): void {
     const bestMove = getBestMove(chess);
     chess.move(bestMove);
@@ -277,36 +268,45 @@ function makeBestMove(): void {
 /* board event */
 
 // Handle the drag start event
-const onDragStart = ({ square, piece }: { square?: string, piece?: string }): void => {
-    if (chess.isCheckmate() || chess.isDraw() || piece.startsWith('b')) {
-        return;
+// TODO:
+const onDragStart = ({ square, piece }: { square?: string, piece?: string }): boolean | void => {
+    // do not pick up pieces if the game is over
+    if (gameState === GameState.gameover) {
+        return false;
     }
+    // only pick up pieces for the player side to move 
+    if (!isPlayerTurn() || !isYourPiece(square as Square) || gameState === GameState.promote) {
+        return false;
+    }
+    // TODO: show available moves
 };
 
 // Handle the drop event
-const onDrop: Callback = ({ source, target }) => {
-    try {
-        const move = chess.move({
+const onDrop: Callback = ({ source, target, piece }) => {
+    console.log('isPlayerTurn', isPlayerTurn());
+    console.log('gameState', gameState);
+    console.log('piece', piece);
+
+    // normal move
+    if (!shouldPromote(piece as string, target as string)) {
+        playerNextMove = {
             from: source,
             to: target,
-            promotion: 'q' // always promote to a queen
-        });
-
-        if (!move) return 'snapback'; // illegal move
-
-        console.log('[onDrop]', chess.ascii());
-
-        updatePGN();
-
-        if (chess.isGameOver()) {
-            window.setTimeout(() => alert('Game over'), 250);
-            return;
+            // promotion: 'q' // always promote to a queen
+        } as Move;
+        if (!isPlayerTurn() || gameState !== GameState.move) {
+            return 'snapback';
         }
-
-        window.setTimeout(makeBestMove, 250);
-    } catch (e) {
-        return 'snapback'; // on error, revert the piece back
+        step();
+        return 'snapback';
     }
+
+    // promotion
+    console.log('promotion');
+    promoteChoose(piece as string, target as string);
+
+
+
 };
 
 
@@ -345,7 +345,25 @@ function getPlay() {
     gamePlay.blackPlay = blackPlay === 'bot' ? botPlay : playerPlay;
 }
 
+function isPlayerTurn() {
+    return gameTurn === GameTurn.white && gamePlay.whitePlay === playerPlay ||
+        gameTurn === GameTurn.black && gamePlay.blackPlay === playerPlay;
+}
 
+function isYourPiece(square: Square): boolean {
+    const piece = chess.get(square);
+    if (!piece) return false;
+    return piece.color === chess.turn();
+}
+
+function shouldPromote(piece: string, target: string): boolean {
+    return piece === 'wP' && target[1] === '8' || piece === 'bP' && target[1] === '1';
+}
+
+function promoteChoose(piece: string, target: string) {
+    console.log('[promoteChoose]', piece, target);
+
+}
 
 // Configuration for the Chessboard
 const cfg: BoardConfig = {
@@ -354,10 +372,10 @@ const cfg: BoardConfig = {
     // orientation: 'black',
 
     onDragStart: onDragStart,
-    // onDrop: onDrop,
+    onDrop: onDrop,
     onChange: onChange,
 
-    onDrop: (...obs: any[]) => { console.log('onDrop', obs); return 'snapback'; },
+    // onDrop: (...obs: any[]) => { console.log('onDrop', obs); return 'snapback'; },
     // onMouseenterSquare: (...obs: any[]) => { console.log('onouseenterSquare', obs) },
     // onMouseleaveSquare: (...obs: any[]) => { console.log('onMouseleaveSquare', obs) },
     // onMousedownSquare: (...obs: any[]) => { console.log('onMousedownSquare', obs) },
@@ -366,6 +384,7 @@ const cfg: BoardConfig = {
 
 // Initialize the board
 board = Chessboard2('board', cfg);
+init();
 
 
 // bind event

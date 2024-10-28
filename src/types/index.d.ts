@@ -97,7 +97,7 @@ declare module '@chrisoakman/chessboard2/dist/chessboard2.min.mjs' {
 	// export type Callback = (...args: any[]) => any;
 
 	// 如果 T 是数组，展开成多个参数，否则当对象作为一个参数处理
-	export type Callback<T = any> = (...args: T extends any[] ? T : [T]) => string | void;
+	export type Callback<T = any> = (...args: T extends any[] ? T : [T]) => string | boolean | void;
 
 	type PieceMoveData = {
 		source?: Square,

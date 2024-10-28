@@ -62,7 +62,16 @@ export function getBestMove(chess: Chess, depth: number = 3, searchOption?: Sear
 	let bestMove = moves[0];
 	let bestScore = isWhite ? -Infinity : Infinity;
 	moves = moves.slice(0, moveThreshold);
+
+	// if have a checkmate move, return it directly
+	let checkmateMove = moves.filter(move => move.san.includes('#'));
+	if (checkmateMove.length > 0) {
+		return checkmateMove[0];
+	}
+
+	// normal search
 	for (const move of moves) {
+
 		chess.move(move);
 		const score = minimax(chess, depth - 1, -Infinity, Infinity, !isWhite);
 		chess.undo();
