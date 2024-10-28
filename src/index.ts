@@ -56,6 +56,8 @@ worker.onmessage = (event: WorkerMessageEvent) => {
 // variables
 let botNextMove: Move | undefined;
 let playerNextMove: Move | undefined;
+let promoteMove: Move | undefined;
+
 let chessID = 0;
 let lastRestartTime = 0;
 let lastResetTime = 0;
@@ -82,6 +84,8 @@ function init() {
 
     botNextMove = undefined;
     playerNextMove = undefined;
+    promoteMove = undefined;
+
     lastResetTime = lastRestartTime = Date.now();
     chessID++;
 
@@ -96,6 +100,7 @@ function init() {
     gameState = GameState.init;
     gameTurn = chess.turn() === 'w' ? GameTurn.white : GameTurn.black;
 
+    display();
     step();
 }
 
@@ -104,6 +109,7 @@ function switchTurn() {
     gameTurn = gameTurn === GameTurn.white ?
         GameTurn.black : GameTurn.white;
     gameState = GameState.init;
+    display();
     step();
 }
 
@@ -121,7 +127,6 @@ function step() {
             gamePlay.blackPlay();
             break;
     }
-    display();
     isGameOver();
 }
 
@@ -134,37 +139,38 @@ function playerPlay() {
             console.log('[playerPlay]', playerNextMove);
             // player move
             if (playerNextMove) {
-                try {
-                    chess.move(playerNextMove);
-                    // MUST clear playerNextMove before switchTurn()
-                    playerNextMove = undefined;
-                    switchTurn();
-                } catch (e) {
-                    console.error("[playerPlay move]", e);
-                    display();
+                let moves = chess.moves({ square: playerNextMove.from, verbose: true });
+
+                let moveIndex = moves.map(move => move.to).indexOf(playerNextMove.to);
+                if (moveIndex === -1) {
+                    console.error('[playerPlay move]', 'Invalid move:', playerNextMove);
+                    return false;
+                } else {
+                    let moveFlag = moves[moveIndex].flags;
+                    // no promotion move
+                    if (!moveFlag.includes('p')) {
+                        chess.move(playerNextMove);
+                        // MUST clear playerNextMove before switchTurn()
+                        playerNextMove = undefined;
+                        switchTurn();
+                    }
+                    else {
+                        // promotion move
+                        gameState = GameState.promote;
+                        // show promotion dialog
+                        promoteChoose(playerNextMove.to);
+                    }
                 }
             }
             break;
         }
         case GameState.promote: {
-            // if (promotionMove?.promotion === undefined) return;
-            // // note:
-            // // 	selectedPos and targetPos have been cleared
-            // chess.move(promotionMove);
-            // let oldPos = posCvt.getBoardXY(promotionMove.from);
-            // let newPos = posCvt.getBoardXY(promotionMove.to);
-            // removePieceEntity(newPos);
-            // addPieceEntity(newPos, createPieceEntity(newPos, chess.get(promotionMove.to)));
-
-            // clearPromotion();
-            // clearMovable();
-            // clearMovePos();
-
-            // clearMoved();
-            // setMoved(oldPos, newPos);
-            // showMoved();
-            // switchTurn();
-            // gameState = GameState.move;
+            if (promoteMove?.promotion === undefined) return;
+            chess.move(promoteMove);
+            // MUST clear promoteMove before switchTurn()
+            promoteMove = undefined;
+            removePromoteChoose();
+            switchTurn();
             break;
         }
         case GameState.gameover: {
@@ -283,29 +289,19 @@ const onDragStart = ({ square, piece }: { square?: string, piece?: string }): bo
 
 // Handle the drop event
 const onDrop: Callback = ({ source, target, piece }) => {
-    console.log('isPlayerTurn', isPlayerTurn());
-    console.log('gameState', gameState);
-    console.log('piece', piece);
-
-    // normal move
-    if (!shouldPromote(piece as string, target as string)) {
-        playerNextMove = {
-            from: source,
-            to: target,
-            // promotion: 'q' // always promote to a queen
-        } as Move;
-        if (!isPlayerTurn() || gameState !== GameState.move) {
-            return 'snapback';
-        }
-        step();
+    playerNextMove = {
+        from: source,
+        to: target,
+        // promotion: 'q' // always promote to a queen
+    } as Move;
+    // if (!isPlayerTurn() || gameState !== GameState.move) {
+    //     return 'snapback';
+    // }
+    step();
+    // @ts-ignore 
+    if (gameState !== GameState.promote) {
         return 'snapback';
     }
-
-    // promotion
-    console.log('promotion');
-    promoteChoose(piece as string, target as string);
-
-
 
 };
 
@@ -356,13 +352,18 @@ function isYourPiece(square: Square): boolean {
     return piece.color === chess.turn();
 }
 
-function shouldPromote(piece: string, target: string): boolean {
-    return piece === 'wP' && target[1] === '8' || piece === 'bP' && target[1] === '1';
+function promoteChoose(target: string) {
+    console.log('[promoteChoose]', target);
+
+    let promotion = document.getElementById('promotion') as HTMLElement;
+    promotion.classList.remove('d-none');
 }
 
-function promoteChoose(piece: string, target: string) {
-    console.log('[promoteChoose]', piece, target);
+function removePromoteChoose() {
+    console.log('[removePromoteChoose]');
 
+    let promotion = document.getElementById('promotion') as HTMLElement;
+    promotion.classList.add('d-none');
 }
 
 // Configuration for the Chessboard
@@ -389,3 +390,7 @@ init();
 
 // bind event
 document.getElementById('restart').addEventListener('click', init);
+document.getElementById('promotionQueen').addEventListener('click', () => { promoteMove = { ...playerNextMove, promotion: 'q' }; step(); });
+document.getElementById('promotionRook').addEventListener('click', () => { promoteMove = { ...playerNextMove, promotion: 'r' }; step(); });
+document.getElementById('promotionBishop').addEventListener('click', () => { promoteMove = { ...playerNextMove, promotion: 'b' }; step(); });
+document.getElementById('promotionKnight').addEventListener('click', () => { promoteMove = { ...playerNextMove, promotion: 'n' }; step(); });

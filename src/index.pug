@@ -5,15 +5,22 @@ html(lang="en")
   head
     meta(cname="viewport" content="width=device-width, initial-scale=1" harset="UTF-8" )
   body
-    nav.navbar.bg-body-tertiary
+    nav.navbar.bg-primary
       .container-fluid
-        span.navbar-brand.mb-0.h1 Simple Chess
-    .container-fluid
-      .d-flex.justify-content-center.mt-3.mx-3
+        span.navbar-brand.mb-0.h1.text-white Simple Chess
+    .container-fluid.my-3
+      .d-flex.justify-content-center.mx-3
         .board#board
-        .info.ms-3
+        .info.ms-3.d-none
           .game-history#gamePGN(style="font-family: monospace")
       .setting.mt-3
+        .promotion.my-3.d-none#promotion
+          label.form-label Promotion
+          .btn-group.ms-3
+            button.btn.btn-outline-primary#promotionQueen Queen
+            button.btn.btn-outline-primary#promotionRook Rook
+            button.btn.btn-outline-primary#promotionBishop Bishop
+            button.btn.btn-outline-primary#promotionKnight Knight
         .search-depth
           label.form-label(for="search-depth") Search depth
           select.form-select#search-depth( aria-label="Default select example")
@@ -22,33 +29,28 @@ html(lang="en")
             option(value="3" selected) 3
         .restart.mt-3 
           button.btn.btn-primary#restart Restart game
-        //- <div class="form-check">
-        //-   <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-        //-   <label class="form-check-label" for="flexRadioDefault1">
-        //-     Default radio
-        //-   </label>
-        //- </div>
-        //- <div class="form-check">
-        //-   <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" checked>
-        //-   <label class="form-check-label" for="flexRadioDefault2">
-        //-     Default checked radio
-        //-   </label>
-        //- </div>
-        .play.mt-3 
-          label.form-label White
-          .form-check
-            input.form-check-input#flexRadioWhitePlay1(type="radio" name="whitePlay" value="player" checked)
-            label.form-check-label(for="flexRadioWhitePlay1") Player
-          .form-check
-            input.form-check-input#flexRadioWhitePlay2(type="radio" name="whitePlay" value="bot")
-            label.form-check-label(for="flexRadioWhitePlay2") Bot
-          label.form-label Black
-          .form-check
-            input.form-check-input#flexRadioBlackPlay1(type="radio" name="blackPlay" value="player" checked)
-            label.form-check-label(for="flexRadioBlackPlay1") Player
-          .form-check
-            input.form-check-input#flexRadioBlackPlay2(type="radio" name="blackPlay" value="bot")
-            label.form-check-label(for="flexRadioBlackPlay2") Bot
+        .gamer.mt-3.row.g-1 
+          //- 两列
+          .col
+            label.form-label White
+            .form-check
+              input.form-check-input#flexRadioWhitePlay1(type="radio" name="whitePlay" value="player" checked)
+              label.form-check-label(for="flexRadioWhitePlay1") Player
+            .form-check
+              input.form-check-input#flexRadioWhitePlay2(type="radio" name="whitePlay" value="bot")
+              label.form-check-label(for="flexRadioWhitePlay2") Bot
+          .col
+            label.form-label Black
+            .form-check
+              input.form-check-input#flexRadioBlackPlay1(type="radio" name="blackPlay" value="player" checked)
+              label.form-check-label(for="flexRadioBlackPlay1") Player
+            .form-check
+              input.form-check-input#flexRadioBlackPlay2(type="radio" name="blackPlay" value="bot")
+              label.form-check-label(for="flexRadioBlackPlay2") Bot
+
+
+
+
 
 
 

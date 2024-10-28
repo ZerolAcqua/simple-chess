@@ -10,15 +10,13 @@ $board-width: 400px;
     // margin: auto;
 }
 
-.info {}
-
 .move-history {
     height: $board-width;
     overflow-y: scroll;
 }
 
 .setting {
-    width: $board-width;
+    max-width: $board-width;
     margin: auto;
 }
 
